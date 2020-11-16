@@ -1,10 +1,10 @@
+use color_eyre::eyre::Result;
 use dbus::{
     arg,
     blocking::{stdintf::org_freedesktop_dbus::Properties, Connection},
 };
 use notify_rust::Notification;
 use std::collections::HashMap;
-use color_eyre::eyre::Result;
 use std::time::Duration;
 
 fn get_media_player(c: &Connection) -> Result<String> {
@@ -21,10 +21,7 @@ fn get_media_player(c: &Connection) -> Result<String> {
     Ok(player_name)
 }
 
-fn get_current_track_info(
-    c: &Connection,
-    player_name: String,
-) -> Result<()> {
+fn get_current_track_info(c: &Connection, player_name: String) -> Result<()> {
     let p = c.with_proxy(
         player_name,
         "/org/mpris/MediaPlayer2",
@@ -48,7 +45,7 @@ fn main() -> Result<()> {
     color_eyre::install()?;
     let c = Connection::new_session()?;
 
-    let player_name = get_media_player(&c).unwrap();
+    let player_name = get_media_player(&c)?;
     let _ = get_current_track_info(&c, player_name);
 
     Ok(())

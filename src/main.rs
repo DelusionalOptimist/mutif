@@ -31,11 +31,27 @@ fn get_current_track_info(c: &Connection, player_name: String) -> Result<()> {
         p.get("org.mpris.MediaPlayer2.Player", "Metadata")?;
 
     let title: Option<&String> = arg::prop_cast(&metadata, "xesam:title");
-    if let Some(title) = title {
+    let album: Option<&String> = arg::prop_cast(&metadata, "xesam:album");
+    let image: Option<&String> = arg::prop_cast(&metadata, "mpris:artUrl");
+
+    let artist = &metadata["xesam:artist"];
+    let iter = artist.0.as_iter().unwrap();
+    let mut artists = String::new();
+    for name in iter {
+        artists.push_str(name.as_str().unwrap());
+    }
+
+    if let (Some(title), Some(album), Some(image)) = (title, album, image) {
         let track_title = title;
+        let album_name = album;
+        let art = image;
         Notification::new()
             .summary("Currently Playing")
-            .body(track_title)
+            .body(&format!(
+                "<b>{}</b>\nby {}\nin {}",
+                track_title, artists, album_name
+            ))
+            .image_path(art)
             .show()?;
     }
     Ok(())
